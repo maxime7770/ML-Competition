@@ -37,7 +37,7 @@ y = train_df["change_type"].values
 train_df = train_df.drop("change_type", axis=1)
 
 
-X_train, X_test, y_train, y_test = train_test_split(train_df, y)
+X_train, X_test, y_train, y_test = train_test_split(train_df, y, test_size=0.2)
 
 # params = {
 #     "objective": "multi:softmax",
@@ -62,7 +62,7 @@ fix_params = {
     "colsample_bytree": 0.7,
     "subsample": 0.6,
     "objective": "multi:softprob",
-    "n_estimators": 1200,
+    "n_estimators": 1500,
     "reg_alpha": 10**(-4),
     "reg_lambda": 10,
     "early_stopping_rounds": 10,
