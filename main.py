@@ -1,3 +1,4 @@
+from sklearn.utils import class_weight
 from xgboost import XGBClassifier, cv
 import geopandas as gpd
 import pandas as pd
@@ -34,10 +35,15 @@ test_df = test_df.drop("index", axis=1)
 
 test_x = test_df.values
 y = train_df["change_type"].values
-train_df = train_df.drop("change_type", axis=1)
+train_df = train_df.drop("change_type", axis=1).values
 
 
-X_train, X_test, y_train, y_test = train_test_split(train_df, y)
+X_train, X_test, y_train, y_test = train_test_split(train_df, y, test_size=0.2)
+
+weights = class_weight.compute_sample_weight(
+    class_weight='balanced',
+    y=y
+)
 
 # params = {
 #     "objective": "multi:softmax",
@@ -49,27 +55,21 @@ X_train, X_test, y_train, y_test = train_test_split(train_df, y)
 # }
 
 
-# cv_params = {
-#     "max_depth": [1, 2, 3, 4, 5, 6],
-#     "min_child_weight": [1, 2, 3, 4],
-# }  # parameters to be tries in the grid search
 fix_params = {
     "max_depth": 6,
     "silent": False,
-    #    "scale_pos_weight": 1,
-    "learning_rate": 0.1,
-    #    "min_child_weight": 4,
-    "colsample_bytree": 0.7,
-    "subsample": 0.6,
+    "learning_rate": 0.05,
+    "colsample_bytree": 0.5,
+    "subsample": 0.5,
     "objective": "multi:softprob",
-    "n_estimators": 1200,
+    "n_estimators": 1300,
     "reg_alpha": 10**(-4),
-    "reg_lambda": 10,
-    "early_stopping_rounds": 10,
+    "reg_lambda": 15,
+    "early_stopping_rounds": 12,
     "scoring": "f1_micro",
     "gpu_id": 0,
     "tree_method": "gpu_hist"
-}  # other parameters, fixed for the moment
+}
 
 
 def xgb_f1(y, t):
@@ -80,11 +80,37 @@ def xgb_f1(y, t):
     return "f1", 1 - f1_score(y_true, y, average="micro")
 
 
-# xgb_clf = GridSearchCV(XGBClassifier(**fix_params), cv_params, scoring="f1_micro", cv=5)
-eval_set = [(X_train, y_train), (X_test, y_test)]
+n_splits = 5
+folds = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=32)
 xgb_clf = XGBClassifier(**fix_params)
-xgb_clf.fit(X_train, y_train, eval_set=eval_set,
-            eval_metric=xgb_f1, verbose=True)
+val = np.zeros(train_df.shape[0])
+pred_mat = np.zeros((test_x.shape[0], n_splits))
+for fold_index, (train_index, val_index) in enumerate(folds.split(train_df, y)):
+    print('Batch {} started...'.format(fold_index))
+    bst = xgb_clf.fit(train_df[train_index], y[train_index],
+                      eval_set=[(train_df[val_index], y[val_index])],
+                      verbose=True,
+                      eval_metric=xgb_f1
+                      )
+    val[val_index] = xgb_clf.predict(train_df[val_index])
+    print('f1_score of this val set is {}'.format(
+        f1_score(y[val_index], val[val_index], average='micro')))
+    pred_mat[:, fold_index] = xgb_clf.predict(test_x)
+
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
+
+pred = np.zeros(test_x.shape[0])
+for i in range(test_x.shape[0]):
+    pred[i] = most_common(list(pred_mat[i, :]))
+
+
+# eval_set = [(X_train, y_train), (X_test, y_test)]
+# xgb_clf = XGBClassifier(**fix_params)
+# xgb_clf.fit(X_train, y_train, eval_set=eval_set,
+#             eval_metric=xgb_f1, verbose=True)
 
 
 # print("XGBoost model accuracy score: {0:0.4f}".format(accuracy_score(y_test, y_pred)))
@@ -97,9 +123,11 @@ xgb_clf.fit(X_train, y_train, eval_set=eval_set,
 
 dump(xgb_clf, "xgb_model.joblib")
 
-pred = xgb_clf.predict(X_test)
-print(f1_score(pred, y_test, average="micro"))
+pred_t = xgb_clf.predict(X_test)
+print(f1_score(pred_t, y_test, average="micro"))
 
-pred_y = xgb_clf.predict(test_x)
-pred_df = pd.DataFrame(pred_y, columns=["change_type"])
+# pred_y = xgb_clf.predict(test_x)
+pred_df = pd.DataFrame(pred, columns=["change_type"])
+pred_df['change_type'] = pred_df['change_type'].apply(lambda x: int(x))
+
 pred_df.to_csv("knn_sample_submission.csv", index=True, index_label="Id")
