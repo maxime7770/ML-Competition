@@ -391,11 +391,11 @@ test_df = test_df.drop(test_df[test_df["area"] == 0].index)
 
 # 1 over area or length:
 
-train_df["1/area"] = 1/train_df["area"]
-test_df["1/area"] = 1/test_df["area"]
+# train_df["1/area"] = 1/train_df["area"]
+# test_df["1/area"] = 1/test_df["area"]
 
-train_df["1/length"] = 1/train_df["length"]
-test_df["1/length"] = 1/test_df["length"]
+# train_df["1/length"] = 1/train_df["length"]
+# test_df["1/length"] = 1/test_df["length"]
 
 # boxcox transformation
 
@@ -405,19 +405,19 @@ test_df["boxcox_area"], par = boxcox(test_df["area"])
 train_df["boxcox_length"], par = boxcox(train_df["length"])
 test_df["boxcox_length"], par = boxcox(test_df["length"])
 
-# square root transformation
+# # square root transformation
 
 train_df["sqrt_area"] = np.sqrt(train_df["area"])
 test_df["sqrt_area"] = np.sqrt(test_df["area"])
 
 
-# length squared
+# # length squared
 
 train_df["squared_length"] = train_df["length"]**2
 test_df["squared_length"] = test_df["length"]**2
 
 
-# area over length squared
+# # area over length squared
 
 train_df["area/length**2"] = train_df["area"]/(train_df["length"]**2)
 test_df["area/length**2"] = test_df["area"]/(test_df["length"]**2)
@@ -463,6 +463,49 @@ test_df = pd.merge(
     left_index=True,
     right_index=True,
 )
+
+# length/width
+
+
+def ratio(u):
+    pt = list(u.coords)
+    pt1 = max(pt, key=lambda x: x[1])   # point with maximal ordinate
+    pt2 = min(pt, key=lambda x: x[1])   # point with minimal ordinate
+    pt3 = max(pt, key=lambda x: x[0])   # point with maximal abscissa
+    pt4 = min(pt, key=lambda x: x[0])   # point with minimal abscissa
+    return (pt3[0]-pt4[0])/(pt1[1]-pt2[1])
+
+
+dic_train = {}
+dic_test = {}
+
+dic_train['length/width'] = [ratio(borders_train.iloc[i]) for i in range(n)]
+dic_test['length/width'] = [ratio(borders_test.iloc[i]) for i in range(p)]
+
+df_train_elong = pd.DataFrame.from_dict(dic_train)
+df_test_elong = pd.DataFrame.from_dict(dic_test)
+
+
+train_df = pd.merge(
+    left=train_df,
+    right=df_train_elong,
+    left_index=True,
+    right_index=True,
+)
+
+test_df = pd.merge(
+    left=test_df,
+    right=df_test_elong,
+    left_index=True,
+    right_index=True,
+)
+
+
+# same with squared
+
+# train_df['length/width**2'] = train_df['length/width']**2
+# test_df['length/width**2'] = test_df['length/width']**2
+
 
 train_df = train_df.drop("geometry", axis=1)
 test_df = test_df.drop("geometry", axis=1)
