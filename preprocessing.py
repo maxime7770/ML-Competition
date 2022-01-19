@@ -541,12 +541,80 @@ test_df['diff_area'] = test_df['geometry'].apply(
     lambda x: x.minimum_rotated_rectangle.area)-test_df['area']
 test_df = test_df.drop("interm", axis=1)
 
-
-# length/width
+# sum of the distances from the centroid to the summits of the rotated rectangle
 
 
 def d(x, y):
     return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2)
+
+
+def sum_dist(u):
+    c = u.centroid
+    centroid = [c.x, c.y]
+    rect = list(set(u.minimum_rotated_rectangle.boundary.coords))
+
+    sum = 0
+    for i in range(4):
+        sum += d(centroid, rect[i])
+    return sum
+
+
+train_df['centroid_dist'] = train_df['geometry']
+train_df['centroid_dist'] = train_df['centroid_dist'].apply(
+    lambda x: sum_dist(x))
+
+test_df['centroid_dist'] = test_df['geometry']
+test_df['centroid_dist'] = test_df['centroid_dist'].apply(
+    lambda x: sum_dist(x))
+
+
+# distances from centroid to each summit of the rectangle
+
+# def dist_centr(u, i):
+#     c = u.centroid
+#     centroid = [c.x, c.y]
+#     rect = list(set(u.minimum_rotated_rectangle.boundary.coords))
+
+#     if i == 0:
+#         minx = sorted(rect, key=lambda x: x[0])[0]
+#         return d(centroid, minx)
+#     elif i == 1:
+#         miny = sorted(rect, key=lambda x: x[1])[0]
+#         return d(centroid, miny)
+#     elif i == 2:
+#         maxx = sorted(rect, key=lambda x: x[0])[-1]
+#         return d(centroid, maxx)
+#     else:
+#         maxy = sorted(rect, key=lambda x: x[1])[-1]
+#         return d(centroid, maxy)
+
+
+# train_df['minx'] = train_df['geometry']
+# train_df['minx'] = train_df['minx'].apply(lambda x: dist_centr(x, 0))
+
+# train_df['maxx'] = train_df['geometry']
+# train_df['maxx'] = train_df['maxx'].apply(lambda x: dist_centr(x, 1))
+
+# train_df['miny'] = train_df['geometry']
+# train_df['miny'] = train_df['miny'].apply(lambda x: dist_centr(x, 2))
+
+# train_df['maxy'] = train_df['geometry']
+# train_df['maxy'] = train_df['maxy'].apply(lambda x: dist_centr(x, 3))
+
+
+# test_df['minx'] = test_df['geometry']
+# test_df['minx'] = test_df['minx'].apply(lambda x: dist_centr(x, 0))
+
+# test_df['maxx'] = test_df['geometry']
+# test_df['maxx'] = test_df['maxx'].apply(lambda x: dist_centr(x, 1))
+
+# test_df['miny'] = test_df['geometry']
+# test_df['miny'] = test_df['miny'].apply(lambda x: dist_centr(x, 2))
+
+# test_df['maxy'] = test_df['geometry']
+# test_df['maxy'] = test_df['maxy'].apply(lambda x: dist_centr(x, 3))
+
+# length/width
 
 
 def ratio(u):

@@ -56,13 +56,13 @@ weights = class_weight.compute_sample_weight(
 
 
 fix_params = {
-    "max_depth": 6,
+    "max_depth": 8,
     "silent": False,
-    "learning_rate": 0.05,
+    "learning_rate": 0.1,
     "colsample_bytree": 0.5,
     "subsample": 0.5,
     "objective": "multi:softprob",
-    "n_estimators": 1300,
+    "n_estimators": 1100,
     "reg_alpha": 10**(-4),
     "reg_lambda": 15,
     "early_stopping_rounds": 12,
@@ -80,7 +80,7 @@ def xgb_f1(y, t):
     return "f1", 1 - f1_score(y_true, y, average="micro")
 
 
-n_splits = 5
+n_splits = 9
 folds = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=32)
 xgb_clf = XGBClassifier(**fix_params)
 val = np.zeros(train_df.shape[0])
