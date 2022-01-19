@@ -214,8 +214,6 @@ test_df["diff4"] = (
 #     n_na_only_found = 0
 #     verbose = False
 
-#     # Step are strings. Steps in the same tuple are considered similar enough. The order of steps_tuple defines the order of steps in reality.
-
 #     int_adv_to_D = [list() for _ in range(N_a)]
 #     int_adv_to_M = [list() for _ in range(N_a)]
 
@@ -299,18 +297,14 @@ test_df["diff4"] = (
 #         # The last ToCompute values (meaning it was not computed ie advancement hasnt been reached) are given the values None
 #         for col in ['duration_to_reach' + str(step2av(step[0])) for step in steps_tuple[1:]][::-1]:
 #             if row[col] == "ToCompute":
-#                 R[col] = "Unreached"
+#                 R[col] = None
 #             else:
 #                 break
 #         # The first ToCompute values (meaning for advancement i->i+1, step i hasnt been seen because photos were made after this step) are given the mean values
 #         for i, col in enumerate(['duration_to_reach' + str(step2av(step[0])) for step in steps_tuple[1:]]):
-#             if row[col] == "ToCompute":
+#             if row[col] in ("ToCompute", "Unknown"):
 #                 R[col] = int_adv_to_D[i]
 
-#         # for i, col in enumerate(['month_of_advancement' + str(step2av(step[0])) for step in steps_tuple[1:]]):
-#         #     if row[col] == "Unknown":
-#         #         R[col] = int_adv_to_M[i]
-#         # If one column is unknown, which means build is constructed but we have not any time data on it, we fill with mean values.
 #         return R
 
 #     df_augment = df_augment.apply(lambda row: pd.Series(
@@ -335,6 +329,30 @@ test_df["diff4"] = (
 #     left_index=True,
 #     right_index=True,
 # )
+
+def season(day):
+    # "day of year" ranges for the northern hemisphere
+    spring = range(80, 172)
+    summer = range(172, 264)
+    fall = range(264, 355)
+    # winter = everything else
+
+    if day in spring:
+        season = 0
+    elif day in summer:
+        season = 1
+    elif day in fall:
+        season = 2
+    else:
+        season = 3
+    return season
+
+
+def weekend(day):
+    if day < 5:
+        return 0
+    else:
+        return 1
 
 
 for x in ["date1", "date2", "date3", "date4", "date5"]:
@@ -362,6 +380,28 @@ for x in ["date1", "date2", "date3", "date4", "date5"]:
         lambda x: datetime.strptime(x, "%d-%m-%Y").year
     )
 
+    # season
+
+    train_df["season" + "_" + x] = train_df[x].apply(
+        lambda x: season(datetime.strptime(
+            x, "%d-%m-%Y").today().timetuple().tm_yday)
+    )
+    test_df["season" + "_" + x] = test_df[x].apply(
+        lambda x: season(datetime.strptime(
+            x, "%d-%m-%Y").today().timetuple().tm_yday)
+    )
+
+    # weekend flag
+
+    # train_df["weekend" + "_" + x] = train_df[x].apply(
+    #     lambda x: weekend(datetime.strptime(
+    #         x, "%d-%m-%Y").weekday())
+    # )
+    # test_df["weekend" + "_" + x] = test_df[x].apply(
+    #     lambda x: season(datetime.strptime(
+    #         x, "%d-%m-%Y").weekday())
+    # )
+
 
 # adding perimters and areas of polygons
 
@@ -369,21 +409,9 @@ train_df["area"] = train_df["geometry"].area
 train_df["length"] = train_df["geometry"].length
 
 
-# a = train_df["area"]
-# b = train_df["length"]
-
-# train_df["area"] = (a - a.min()) / (a.max() - a.min())
-# train_df["length"] = (b - b.min()) / (b.max() - b.min())
-
 test_df["area"] = test_df["geometry"].area
 test_df["length"] = test_df["geometry"].length
 
-
-# a = test_df["area"]
-# b = test_df["length"]
-
-# test_df["area"] = (a - a.min()) / (a.max() - a.min())
-# test_df["length"] = (b - b.min()) / (b.max() - b.min())
 
 train_df = train_df.drop(train_df[train_df["area"] == 0].index)
 test_df = test_df.drop(test_df[test_df["area"] == 0].index)
@@ -405,30 +433,34 @@ test_df["boxcox_area"], par = boxcox(test_df["area"])
 train_df["boxcox_length"], par = boxcox(train_df["length"])
 test_df["boxcox_length"], par = boxcox(test_df["length"])
 
-# # square root transformation
+# # # square root transformation
 
-train_df["sqrt_area"] = np.sqrt(train_df["area"])
-test_df["sqrt_area"] = np.sqrt(test_df["area"])
-
-
-# # length squared
-
-train_df["squared_length"] = train_df["length"]**2
-test_df["squared_length"] = test_df["length"]**2
+# train_df["sqrt_area"] = np.sqrt(train_df["area"])
+# test_df["sqrt_area"] = np.sqrt(test_df["area"])
 
 
-# # area over length squared
+# # # length squared
+
+# train_df["squared_length"] = train_df["length"]**2
+# test_df["squared_length"] = test_df["length"]**2
+
+
+# # # area over length squared
 
 train_df["area/length**2"] = train_df["area"]/(train_df["length"]**2)
 test_df["area/length**2"] = test_df["area"]/(test_df["length"]**2)
 
 # elongation
 
-borders_train = train_df["geometry"].boundary
-borders_test = train_df["geometry"].boundary
+borders_train = train_df["geometry"]
+borders_test = test_df["geometry"]
+
+
+borders_train_el = train_df["geometry"].boundary
+borders_test_el = test_df["geometry"].boundary
 
 n = borders_train.shape[0]
-p = borders_train.shape[0]
+p = borders_test.shape[0]
 
 
 def elong(u):
@@ -443,8 +475,10 @@ def elong(u):
 dic_train = {}
 dic_test = {}
 
-dic_train['elongation'] = [elong(borders_train.iloc[i]) for i in range(n)]
-dic_test['elongation'] = [elong(borders_test.iloc[i]) for i in range(p)]
+dic_train['elongation'] = [
+    elong(borders_train_el.iloc[i]) for i in range(n)]
+dic_test['elongation'] = [
+    elong(borders_test_el.iloc[i]) for i in range(p)]
 
 df_train_elong = pd.DataFrame.from_dict(dic_train)
 df_test_elong = pd.DataFrame.from_dict(dic_test)
@@ -464,38 +498,104 @@ test_df = pd.merge(
     right_index=True,
 )
 
+
+# minx etc.
+
+train_df['minx'] = train_df['geometry'].bounds.minx
+train_df['miny'] = train_df['geometry'].bounds.miny
+train_df['maxx'] = train_df['geometry'].bounds.maxx
+train_df['maxy'] = train_df['geometry'].bounds.maxy
+
+test_df['minx'] = test_df['geometry'].bounds.minx
+test_df['miny'] = test_df['geometry'].bounds.miny
+test_df['maxx'] = test_df['geometry'].bounds.maxx
+test_df['maxy'] = test_df['geometry'].bounds.maxy
+
+train_df['centroid_x'] = train_df['geometry'].centroid.x
+train_df['centroid_y'] = train_df['geometry'].centroid.y
+test_df['centroid_x'] = test_df['geometry'].centroid.x
+test_df['centroid_y'] = test_df['geometry'].centroid.y
+
+train_df['height'] = train_df['maxy']-train_df['miny']
+train_df['width'] = train_df['maxx']-train_df['minx']
+
+test_df['height'] = test_df['maxy']-test_df['miny']
+test_df['width'] = test_df['maxx']-test_df['minx']
+
+# nb of points in convex_hull
+
+train_df['nb_points'] = train_df['geometry'].convex_hull.boundary.apply(
+    lambda x: len(x.coords))
+test_df['nb_points'] = test_df['geometry'].convex_hull.boundary.apply(
+    lambda x: len(x.coords))
+
+# diff of area between original polygon and the rotated rectangle (ie check the likelihood with a rectangle)
+
+train_df['interm'] = train_df['geometry']
+train_df['diff_area'] = train_df['geometry'].apply(
+    lambda x: x.minimum_rotated_rectangle.area)-train_df['area']
+train_df = train_df.drop("interm", axis=1)
+
+test_df['interm'] = test_df['geometry']
+test_df['diff_area'] = test_df['geometry'].apply(
+    lambda x: x.minimum_rotated_rectangle.area)-test_df['area']
+test_df = test_df.drop("interm", axis=1)
+
+
 # length/width
 
 
+def d(x, y):
+    return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2)
+
+
 def ratio(u):
-    pt = list(u.coords)
-    pt1 = max(pt, key=lambda x: x[1])   # point with maximal ordinate
-    pt2 = min(pt, key=lambda x: x[1])   # point with minimal ordinate
-    pt3 = max(pt, key=lambda x: x[0])   # point with maximal abscissa
-    pt4 = min(pt, key=lambda x: x[0])   # point with minimal abscissa
-    return (pt3[0]-pt4[0])/(pt1[1]-pt2[1])
+    c = u.centroid
+    dmin = u.boundary.distance(c)
+    pt = list(u.boundary.coords)
+    c = [c.x, c.y]
+    dist = [d(x, c) for x in pt]
+    return max(dist)/dmin
+
+    # pt = list(u.coords)
+    # pt1 = max(pt, key=lambda x: x[1])   # point with maximal ordinate
+    # pt2 = min(pt, key=lambda x: x[1])   # point with minimal ordinate
+    # pt3 = max(pt, key=lambda x: x[0])   # point with maximal abscissa
+    # pt4 = min(pt, key=lambda x: x[0])   # point with minimal abscissa
+    # L = d(pt3, pt4)
+    # l = d(pt1, pt2)
+    # return max(L, l)/min(L, l)
+
+
+def ratio2(u):  # using rotated rectangle
+    rect = u.minimum_rotated_rectangle
+    pt = list(set(rect.boundary.coords))
+    pt = sorted(pt, key=lambda x: d(x, pt[0]))
+    d1 = d(pt[0], pt[1])
+    d2 = d(pt[0], pt[2])
+    return d2/d1
 
 
 dic_train = {}
 dic_test = {}
 
-dic_train['length/width'] = [ratio(borders_train.iloc[i]) for i in range(n)]
-dic_test['length/width'] = [ratio(borders_test.iloc[i]) for i in range(p)]
+dic_train['length/width'] = [ratio2(borders_train.iloc[i]) for i in range(n)]
+dic_test['length/width'] = [ratio2(borders_test.iloc[i]) for i in range(p)]
 
-df_train_elong = pd.DataFrame.from_dict(dic_train)
-df_test_elong = pd.DataFrame.from_dict(dic_test)
+df_train_ratio = pd.DataFrame.from_dict(dic_train)
+df_test_ratio = pd.DataFrame.from_dict(dic_test)
 
 
 train_df = pd.merge(
     left=train_df,
-    right=df_train_elong,
+    right=df_train_ratio,
     left_index=True,
     right_index=True,
 )
 
 test_df = pd.merge(
     left=test_df,
-    right=df_test_elong,
+    right=df_test_ratio,
     left_index=True,
     right_index=True,
 )
@@ -566,27 +666,27 @@ train_df["change_type"] = train_df["change_type"].apply(
 
 
 ############  FEATURETOOLS  ###############
-import featuretools as ft
-import woodwork
+# import featuretools as ft
+# import woodwork
 
-# J'ai gardé les dates sous forme purement numérique, parce qu'il faut un time_index
-ES = ft.EntitySet(id='train df')
+# # J'ai gardé les dates sous forme purement numérique, parce qu'il faut un time_index
+# ES = ft.EntitySet(id='train df')
 
-logical_types = {}
+# logical_types = {}
 
-ES = ES.add_dataframe(dataframe_name='train date1', dataframe=train_df[['index', 'date1', 'change_status_date1', 'area', 'length']], index='index', logical_types={
-                      'change_status_date1': woodwork.logical_types.Categorical, 'date1': woodwork.logical_types.Datetime}, time_index='date1')
-ES = ES.add_dataframe(dataframe_name='train date2', dataframe=train_df[['index', 'date2', 'change_status_date2', 'area', 'length']], make_index=True, index='index2', logical_types={
-                      'change_status_date2': woodwork.logical_types.Categorical, 'date2': woodwork.logical_types.Datetime}, time_index='date2')
+# ES = ES.add_dataframe(dataframe_name='train date1', dataframe=train_df[['index', 'date1', 'change_status_date1', 'area', 'length']], index='index', logical_types={
+#                       'change_status_date1': woodwork.logical_types.Categorical, 'date1': woodwork.logical_types.Datetime}, time_index='date1')
+# ES = ES.add_dataframe(dataframe_name='train date2', dataframe=train_df[['index', 'date2', 'change_status_date2', 'area', 'length']], make_index=True, index='index2', logical_types={
+#                       'change_status_date2': woodwork.logical_types.Categorical, 'date2': woodwork.logical_types.Datetime}, time_index='date2')
 
-ES = ES.add_relationship('train date1', 'index', 'train date2', 'index')
-print(ES)
+# ES = ES.add_relationship('train date1', 'index', 'train date2', 'index')
+# print(ES)
 
-feature_matrix, feature_defs = ft.dfs(entityset=ES,
-                                      target_dataframe_name='train date1',
-                                      verbose=1
-                                      )
-print(feature_matrix)
+# feature_matrix, feature_defs = ft.dfs(entityset=ES,
+#                                       target_dataframe_name='train date1',
+#                                       verbose=1
+#                                       )
+# print(feature_matrix)
 ######################################
 
 
