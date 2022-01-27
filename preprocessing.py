@@ -1,3 +1,5 @@
+from convexity import is_convex_polygon
+from math import *
 from xgboost import XGBClassifier, cv
 import geopandas as gpd
 import pandas as pd
@@ -541,11 +543,68 @@ test_df['diff_area'] = test_df['geometry'].apply(
     lambda x: x.minimum_rotated_rectangle.area)-test_df['area']
 test_df = test_df.drop("interm", axis=1)
 
-# sum of the distances from the centroid to the summits of the rotated rectangle
+# compare the area of the polygon and the area of the circumscribed circle
 
 
 def d(x, y):
     return np.sqrt((x[0]-y[0])**2+(x[1]-y[1])**2)
+
+
+# def area_circle(u):
+#     centr = u.centroid  # center of the circle
+#     c = [centr.x, centr.y]
+#     pt = list(u.boundary.coords)
+#     pt = sorted(pt, key=lambda x: d(x, c))
+#     pmax = pt[-1]    # points the farest from centroid
+#     return d(c, pmax)**2*pi
+
+
+# dic_train = {}
+# dic_test = {}
+
+# dic_train['area_circle'] = [area_circle(borders_train.iloc[i])
+#                             for i in range(n)]
+# dic_test['area_circle'] = [area_circle(borders_test.iloc[i])
+#                            for i in range(p)]
+
+# df_train_circle = pd.DataFrame.from_dict(dic_train)
+# df_test_circle = pd.DataFrame.from_dict(dic_test)
+
+# train_df = pd.merge(
+#     left=train_df,
+#     right=df_train_circle,
+#     left_index=True,
+#     right_index=True,
+# )
+
+# test_df = pd.merge(
+#     left=test_df,
+#     right=df_test_circle,
+#     left_index=True,
+#     right_index=True,
+# )
+
+# train_df['area_circle'] = train_df['area_circle']-train_df['area']
+# test_df['area_circle'] = test_df['area_circle']-test_df['area']
+
+
+# test convexity (1 if convex, 0 if not)
+
+
+train_df['is_convex'] = train_df['geometry'].apply(
+    lambda x: list(x.boundary.coords)[:-1])
+train_df['is_convex'] = train_df['is_convex'].apply(
+    lambda x: is_convex_polygon(x))
+train_df['is_convex'] = train_df['is_convex'].astype(int)
+
+test_df['is_convex'] = test_df['geometry'].apply(
+    lambda x: list(x.boundary.coords)[:-1])
+test_df['is_convex'] = test_df['is_convex'].apply(
+    lambda x: is_convex_polygon(x))
+test_df['is_convex'] = test_df['is_convex'].astype(int)
+
+
+# sum of the distances from the centroid to the summits of the rotated rectangle
 
 
 def sum_dist(u):
@@ -613,6 +672,7 @@ test_df['centroid_dist'] = test_df['centroid_dist'].apply(
 
 # test_df['maxy'] = test_df['geometry']
 # test_df['maxy'] = test_df['maxy'].apply(lambda x: dist_centr(x, 3))
+
 
 # length/width
 
