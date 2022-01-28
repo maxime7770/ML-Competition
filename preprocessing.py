@@ -617,6 +617,18 @@ def sum_dist(u):
         sum += d(centroid, rect[i])
     return sum
 
+def sum_dist2(u):
+    c = u.centroid
+    centroid = [c.x, c.y]
+    polyg = u.boundary.coords
+
+    sum = 0
+    n_points = len(polyg)
+    if n_points ==0: return None    # or 0 ?
+    for i in range(n_points):
+        sum += d(centroid, polyg[i])
+    return sum/n_points
+
 
 train_df['centroid_dist'] = train_df['geometry']
 train_df['centroid_dist'] = train_df['centroid_dist'].apply(

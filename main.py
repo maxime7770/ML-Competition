@@ -67,20 +67,18 @@ fix_params = {
     "reg_lambda": 15,
     "early_stopping_rounds": 12,
     "scoring": "f1_micro",
-    "gpu_id": 0,
-    "tree_method": "gpu_hist"
 }
 
 
 def xgb_f1(y, t):
     y_true = t.get_label()
-    print(y_true)
     y = np.array([np.argmax(y[i]) for i in range(len(y))])
-    print(y)
-    return "f1", 1 - f1_score(y_true, y, average="micro")
+    res = 1 - f1_score(y_true, y, average="micro")
+    print(res)
+    return "f1", res
 
 
-n_splits = 9
+n_splits = 5
 folds = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=32)
 xgb_clf = XGBClassifier(**fix_params)
 val = np.zeros(train_df.shape[0])
@@ -89,9 +87,10 @@ for fold_index, (train_index, val_index) in enumerate(folds.split(train_df, y)):
     print('Batch {} started...'.format(fold_index))
     bst = xgb_clf.fit(train_df[train_index], y[train_index],
                       eval_set=[(train_df[val_index], y[val_index])],
-                      verbose=True,
+                      verbose=0,
                       eval_metric=xgb_f1
                       )
+    raise
     val[val_index] = xgb_clf.predict(train_df[val_index])
     print('f1_score of this val set is {}'.format(
         f1_score(y[val_index], val[val_index], average='micro')))
