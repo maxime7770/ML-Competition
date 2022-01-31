@@ -1,3 +1,4 @@
+from black import sys
 import pandas as pd
 import xgboost
 from sklearn.preprocessing import LabelEncoder
@@ -13,29 +14,52 @@ from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 
 rf = RandomForestClassifier(n_estimators=100,
-                            max_depth=12,
+                            max_depth=5,
                             min_samples_leaf=1,
                             min_samples_split=2,
                             )
-n_data_max = 20000
+n_data_max = 99999999
+n_folds = 5
+scoring = "accuracy"
+add_knn_aug = False
+
+
 
 print("Loading data...")
 train_df = pd.read_csv('train_df.csv')
 test_df = pd.read_csv('test_df.csv')
-Y = train_df["change_type"][:n_data_max]
-X = train_df.drop("change_type", 1)
-X = X[['area',
-       'length', 'boxcox_area', 'boxcox_length', 'area/length**2',
-    #    'elongation', 'minx', 'miny', 'maxx', 'maxy', 'centroid_x',
-    #    'centroid_y', 'height', 'width', 'nb_points', 'diff_area', 'is_convex',
-    #    'centroid_dist', 'length/width', 'Dense Urban', 'Industrial', 'None',
-    #    'Rural', 'Sparse Urban', 'Urban Slum', 'Barren Land', 'Coastal',
-    #    'Dense Forest', 'Desert', 'Farms', 'Grass Land', 'Hills', 'Lakes',
-       'None.1', 'River', 'Snow', 'Sparse Forest']][:n_data_max]
+idx = idx = np.random.permutation(train_df.index)
+
+Y = train_df["change_type"].reindex(idx)[:n_data_max]
+X = train_df.drop("change_type", 1).reindex(idx)[:n_data_max]
+
+X = X[[
+       'area', 'length', 'area/length**2',
+       'elongation', 'centroid_x',
+       'centroid_y', 'height', 'width', 'nb_points', 'diff_area', 'is_convex',
+       'centroid_dist', 'length/width', 'Dense Urban', 'Industrial', 'None',
+       'Rural', 'Sparse Urban', 'Urban Slum', 'Barren Land', 'Coastal',
+       'Dense Forest', 'Desert', 'Farms', 'Grass Land', 'Hills', 'Lakes',
+       'None.1', 'River', 'Snow', 'Sparse Forest',
+      ]]
+
+if add_knn_aug:
+       X_knn_aug = pd.read_csv('train_df_knn_aug.csv')
+       X_knn_aug = X_knn_aug[[
+       'knn_area', 'knn_length', 'knn_area/length**2', 'knn_elongation',
+       'knn_centroid_x', 'knn_height', 'knn_width', 'knn_nb_points',
+       'knn_centroid_dist', 'knn_length/width', 'knn_Dense Urban',
+       'knn_Industrial', 'knn_None', 'knn_Rural', 'knn_Sparse Urban',
+       'knn_Urban Slum', 'knn_Barren Land', 'knn_Coastal', 'knn_Dense Forest',
+       'knn_Desert', 'knn_Farms', 'knn_Grass Land', 'knn_Hills', 'knn_Lakes',
+       'knn_None.1', 'knn_River', 'knn_Snow', 'knn_Sparse Forest'
+       ]].reindex(idx)[:n_data_max]
+       X = pd.concat([X, X_knn_aug], axis=1)
 
 print("Cross val ...")
-n_folds = 10
-scores = cross_val_score(rf, X, Y , cv = n_folds)
+scores = cross_val_score(rf, X, Y , cv = n_folds, 
+                         scoring = scoring,
+                         )
 m = scores.mean()
 std = scores.std()
-print(f"CV score: {round(m,2)}% +/- {round(std, 2)}%")
+print(f"CV score for {scoring}: {round(100*m,2)}% +/- {round(100*std, 2)}%")
