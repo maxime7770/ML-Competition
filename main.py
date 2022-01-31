@@ -90,7 +90,6 @@ for fold_index, (train_index, val_index) in enumerate(folds.split(train_df, y)):
                       verbose=0,
                       eval_metric=xgb_f1
                       )
-    raise
     val[val_index] = xgb_clf.predict(train_df[val_index])
     print('f1_score of this val set is {}'.format(
         f1_score(y[val_index], val[val_index], average='micro')))
