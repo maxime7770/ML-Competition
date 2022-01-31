@@ -1,2 +1,4 @@
 *.csv
 *.geojson
+*.npy
+figures

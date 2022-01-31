@@ -1,0 +1,51 @@
+TO DO:
+
+- methode de suppression des features : une fois qu'on a créé pleins de features il faudrait implementer un truc pour supprimer les plus nazes,
+ca plaira au prof qui verra qu'on a pas brute force et ca peut eviter d'overfit sur les 70% du test dataset
+- clustering : les données de train comme de test sont réparties par cluster géographiques. Par exemple df_train[150, 150 + 200] va donner 200 points associé
+à un cluster (qui correspond surement a une photo satellite, d'une ville peut etre), et apres 250 on passe a une autre photo
+Faut trouver un moyen de regrouper les données en ces clusters sans erreur, en choisissant de passer 
+- créer des features à partir de ces clusters: le but est, quand on a une donnée x, de retrouver son cluster associé et d'en extraire des infos.
+On pense par exemple à la densité N_buildings/Surface_cluster, Surface_buildings/Surface_cluster
+Eventuellement calculé sur tout le cluster uniformément mais aussi en pondérant par rapport à la distance du building à la donnée x.
+- CNN classificateur sur les clusters ?? : avec en entrée un channel position (x,y) des buildings et position (x,y) de x (idée un peu sus mais stylée)
+- CNN classificateur sur une photo de la surface occupée par les building proches de x : en entrée mettre le voisinnage de x 
+
+
+
+REMARQUES:
+- go tester sur random forest (fichier random_forest.py) les features pour entrainer rapidement (xgb prend 40+ min). Risque que xgb marche sur des features qui marchent pas 
+sur rf auquel cas on ratio des features à tord mais bon.
+- sur 310k données, seuls 20k ont 2 ou plus urban types. C'est assez faible pour qu'on les oublie et qu'on mette un de leur type random
+C'est pas le cas pour geography_types (100k données ont plus de 1 types)
+
+FEATURES:
+Features qu'on a:
+- change_status_dateX : statut à la date X (pour X allant de 1 à 5)
+- diffX : durée de la transition X->X+1
+- jour de la semaine, mois et saison à dateX
+- features géométriques:
+      - area, lenght
+      - boxcox features (useless imo)
+
+      - elongation = mesure de l'élongation du truc
+      - area/L²
+      - area/L
+      - height et width (calculé depuis le rotated rectangle)
+      - centroid_dist (distance moyenne de la périphérie)
+
+      - centroid_x, centroid_y
+      - nb_points
+      - is_convex
+      - diff_area = ??
+      - minx, maxy, etc
+
+
+- G: one hot encoding pour le geographical type G
+- U: one hot encoding pour le geographical type U (pas de one hot?)
+
+
+Accuracy:
+- base : 61.2%
+- knn_mean : 62.8 %
+- knn_concat3: 61.1%
