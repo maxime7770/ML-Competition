@@ -43,17 +43,17 @@ def load_list(name):
     return A.tolist()
 
 
-def load_data(add_knn_mean = True, 
-              add_knn_concat = True, 
+def load_data(add_knn_mean = False, 
+              add_knn_concat = False, 
               add_polynomial = False, 
               add_dates = False, 
               n_data_max = 99999999, shuffle = False):
     print("Loading data...")
     train_df = pd.read_csv('train_df.csv', index_col = 0)
-    idx = np.random.permutation(train_df.index) if shuffle else train_df.index  #Shuffle train dataset
+    # idx = np.random.permutation(train_df.index) if shuffle else train_df.index  #Shuffle train dataset
 
-    Y = train_df["change_type"].reindex(idx)[:n_data_max]
-    X = train_df.drop("change_type", 1).reindex(idx)[:n_data_max]
+    Y = train_df["change_type"]
+    X = train_df.drop("change_type", 1)
     
     X = X[[
        'change_status_date1', 'change_status_date2', 'change_status_date3', 'change_status_date4', 'change_status_date5',
@@ -70,18 +70,17 @@ def load_data(add_knn_mean = True,
         'Rural', 'Sparse Urban', 'Urban Slum', 'Barren Land', 'Coastal',
         'Dense Forest', 'Desert', 'Farms', 'Grass Land', 'Hills', 'Lakes',
         'None.1', 'River', 'Snow', 'Sparse Forest']]
-    
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv('train_df_knn_mean.csv', index_col = 0).reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('train_df_knn_mean.csv')
         X = pd.concat([X, X_knn_aug], axis=1)
         
     if add_knn_concat:
-        X_knn_aug = pd.read_csv('train_df_knn_concat.csv', index_col = 0).reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('train_df_knn_concat.csv', index_col = 0)
         X = pd.concat([X, X_knn_aug], axis=1)
     
     if add_dates:
-        X_knn_aug = pd.read_csv('train_df_dates.csv', index_col = 0).reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('train_df_dates.csv', index_col = 0)
         X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5']]
         if len(X_knn_aug) != len(X):
             raise
@@ -92,7 +91,7 @@ def load_data(add_knn_mean = True,
         poly = PolynomialFeatures(degree =2, interaction_only = True, include_bias=False)
         X = poly.fit_transform(X)
         print('Done')
-        
+    print(X.shape)
     print("X_train and Y_train loaded.")
     return X, Y
 
@@ -100,9 +99,7 @@ def load_data(add_knn_mean = True,
 def load_data_test(add_knn_mean = True, add_knn_concat = True, n_data_max = 99999999, shuffle = False):
     print("Loading data...")
     test_df = pd.read_csv('test_df.csv')
-    idx = np.random.permutation(test_df.index) if shuffle else test_df.index  #Shuffle train dataset
-
-    X = test_df.reindex(idx)[:n_data_max]
+    X = test_df
 
     X = X[[
         'area', 'length', 'area/length**2',
@@ -114,11 +111,11 @@ def load_data_test(add_knn_mean = True, add_knn_concat = True, n_data_max = 9999
         'None.1', 'River', 'Snow', 'Sparse Forest']]
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv('test_df_knn_mean.csv', index_col = 0).reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('test_df_knn_mean.csv', index_col = 0)
         X = pd.concat([X, X_knn_aug], axis=1)
                 
     if add_knn_concat:
-        X_knn_aug = pd.read_csv('test_df_knn_concat.csv', index_col = 0).reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('test_df_knn_concat.csv', index_col = 0)
         X = pd.concat([X, X_knn_aug], axis=1)
     print("X_test loaded.")
     return X
