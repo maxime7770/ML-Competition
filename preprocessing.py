@@ -415,26 +415,6 @@ test_df["area"] = test_df["geometry"].area
 test_df["length"] = test_df["geometry"].length
 
 
-train_df = train_df.drop(train_df[train_df["area"] == 0].index)
-test_df = test_df.drop(test_df[test_df["area"] == 0].index)
-
-
-# 1 over area or length:
-
-# train_df["1/area"] = 1/train_df["area"]
-# test_df["1/area"] = 1/test_df["area"]
-
-# train_df["1/length"] = 1/train_df["length"]
-# test_df["1/length"] = 1/test_df["length"]
-
-# boxcox transformation
-
-train_df["boxcox_area"], par = boxcox(train_df["area"])
-test_df["boxcox_area"], par = boxcox(test_df["area"])
-
-train_df["boxcox_length"], par = boxcox(train_df["length"])
-test_df["boxcox_length"], par = boxcox(test_df["length"])
-
 # # # square root transformation
 
 # train_df["sqrt_area"] = np.sqrt(train_df["area"])
