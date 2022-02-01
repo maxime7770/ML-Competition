@@ -43,9 +43,3 @@ Features qu'on a:
 
 - G: one hot encoding pour le geographical type G
 - U: one hot encoding pour le geographical type U (pas de one hot?)
-
-
-Accuracy:
-- base : 61.2%
-- knn_mean : 62.8 %
-- knn_concat3: 61.1%

@@ -14,16 +14,20 @@ def plot_cluster(df_cluster, save = None):
         "Industrial": 4,
         "Mega Projects": 5,
     }
-
     colors = ['r','b','g','y','c','w']
 
     # plt.style.use('dark_background')
     for category, i in change_type_map.items():
-        X_feature = df_cluster[df_cluster['change_type'] == category]
-        geometry = X_feature['geometry']
-        L_x = geometry.apply(lambda x : x.boundary.centroid.x)
-        L_y = geometry.apply(lambda x : x.boundary.centroid.y)
+        if 'change_type' in df_cluster:
+            X_feature = df_cluster[df_cluster['change_type'] == category]
+            stopping = False
+        else:
+            X_feature = df_cluster
+            stopping = True
+        L_x = X_feature['centroid_x']
+        L_y = X_feature['centroid_y']
         plt.scatter(L_x, L_y, s = 0.1, color = colors[i])
+        if stopping: break
     
     if save is not None: plt.savefig(save)
     else: plt.show()
@@ -56,11 +60,11 @@ def load_data(add_knn_mean = True, add_knn_concat = True, n_data_max = 99999999,
         'None.1', 'River', 'Snow', 'Sparse Forest']]
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv('train_df_knn_mean.csv').reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('train_df_knn_mean.csv', index_col = 0).reindex(idx)[:n_data_max]
         X = pd.concat([X, X_knn_aug], axis=1)
-                
+        
     if add_knn_concat:
-        X_knn_aug = pd.read_csv('train_df_knn_concat.csv').reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('train_df_knn_concat.csv', index_col = 0).reindex(idx)[:n_data_max]
         X = pd.concat([X, X_knn_aug], axis=1)
     print("X_train and Y_train loaded.")
     return X, Y
@@ -83,11 +87,11 @@ def load_data_test(add_knn_mean = True, add_knn_concat = True, n_data_max = 9999
         'None.1', 'River', 'Snow', 'Sparse Forest']]
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv('test_df_knn_mean.csv').reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('test_df_knn_mean.csv', index_col = 0).reindex(idx)[:n_data_max]
         X = pd.concat([X, X_knn_aug], axis=1)
                 
     if add_knn_concat:
-        X_knn_aug = pd.read_csv('test_df_knn_concat.csv').reindex(idx)[:n_data_max]
+        X_knn_aug = pd.read_csv('test_df_knn_concat.csv', index_col = 0).reindex(idx)[:n_data_max]
         X = pd.concat([X, X_knn_aug], axis=1)
     print("X_test loaded.")
     return X
