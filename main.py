@@ -20,6 +20,8 @@ import xgboost
 from joblib import dump, load
 from datetime import datetime
 
+from utils import load_data, load_data_test
+
 
 train_df = pd.read_csv("train_df.csv", index_col=0)
 test_df = pd.read_csv("test_df.csv", index_col=0)
@@ -38,7 +40,24 @@ y = train_df["change_type"].values
 train_df = train_df.drop("change_type", axis=1).values
 
 
-X_train, X_test, y_train, y_test = train_test_split(train_df, y, test_size=0.2)
+### LOAD DATA 
+X, Y = load_data(add_knn_mean=True,
+                     add_knn_concat=False,
+                     add_dates=False,   #Cannot cause data were dropped
+                     n_data_max= 99999999999,
+                     shuffle=True,
+)
+X_val = load_data_test(add_knn_mean=True,
+                     add_knn_concat=False,
+                     add_dates=False,   #Cannot cause data were dropped
+                     n_data_max= 99999999999,
+                     shuffle=True,
+)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+###
+
+
+#X_train, X_test, y_train, y_test = train_test_split(train_df, y, test_size=0.2)
 
 weights = class_weight.compute_sample_weight(
     class_weight='balanced',
