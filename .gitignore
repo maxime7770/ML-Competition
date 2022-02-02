@@ -2,4 +2,9 @@
 *.geojson
 *.npy
 figures
+<<<<<<< HEAD
+*.joblib
+*.txt
+=======
 data
+>>>>>>> e6f08072315adfd009d3cecc9a88eba2a48c38a1
