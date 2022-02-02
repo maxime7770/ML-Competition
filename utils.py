@@ -59,7 +59,7 @@ def load_data(add_knn_mean = False,
     X = X[[
        'change_status_date1', 'change_status_date2', 'change_status_date3', 'change_status_date4', 'change_status_date5',
        'diff1', 'diff2', 'diff3', 'diff4', 
-       'season_date1', 'season_date2', 'season_date3', 'season_date4', 'season_date5',
+    #    'season_date1', 'season_date2', 'season_date3', 'season_date4', 'season_date5',
        'year_date1', 'year_date2', 'year_date3', 'year_date4', 'year_date5',
        
         'area', 'length', 'area/length**2',
@@ -71,22 +71,28 @@ def load_data(add_knn_mean = False,
         'Rural', 'Sparse Urban', 'Urban Slum', 'Barren Land', 'Coastal',
         'Dense Forest', 'Desert', 'Farms', 'Grass Land', 'Hills', 'Lakes',
         'None.1', 'River', 'Snow', 'Sparse Forest']]
+    print(f'\nBasic features lenght: {len(X)}')
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv(f'{name}_df_knn_mean.csv', index_col = 0)
-        X = pd.concat([X, X_knn_aug], axis=1)
+        X_aug = pd.read_csv(f'{name}_df_knn_mean.csv', index_col = 0)
+        X = pd.concat([X, X_aug], axis=1)
+        print(f'knn mean features lenght: {len(X_aug)}')
+
         
     if add_knn_concat:
-        X_knn_aug = pd.read_csv(f'{name}_df_knn_concat.csv', index_col = 0)
-        X = pd.concat([X, X_knn_aug], axis=1)
+        X_aug = pd.read_csv(f'{name}_df_knn_concat.csv', index_col = 0)
+        X = pd.concat([X, X_aug], axis=1)
+        print(f'knn concat features lenght: {len(X_aug)}')
+
     
     if add_dates:
-        X_knn_aug = pd.read_csv(f'{name}_df_dates.csv', index_col = 0)
-        X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5',
+        X_aug = pd.read_csv(f'{name}_df_dates.csv', index_col = 0)
+        X_aug = X_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5',
                                'old1','old2','old3','old4','old5',]]
-        if len(X_knn_aug) != len(X):
+        if len(X_aug) != len(X):
             raise
-        X = pd.concat([X, X_knn_aug], axis=1)
+        print(f'Dates features lenght: {len(X_aug)}')
+        X = pd.concat([X, X_aug], axis=1)
         
     if add_polynomial:
         print('Poly augment...')
@@ -117,7 +123,7 @@ def load_data_test(add_knn_mean = False,
     X = X[[
        'change_status_date1', 'change_status_date2', 'change_status_date3', 'change_status_date4', 'change_status_date5',
        'diff1', 'diff2', 'diff3', 'diff4', 
-       'season_date1', 'season_date2', 'season_date3', 'season_date4', 'season_date5',
+    #    'season_date1', 'season_date2', 'season_date3', 'season_date4', 'season_date5',
        'year_date1', 'year_date2', 'year_date3', 'year_date4', 'year_date5',
        
         'area', 'length', 'area/length**2',
@@ -129,22 +135,28 @@ def load_data_test(add_knn_mean = False,
         'Rural', 'Sparse Urban', 'Urban Slum', 'Barren Land', 'Coastal',
         'Dense Forest', 'Desert', 'Farms', 'Grass Land', 'Hills', 'Lakes',
         'None.1', 'River', 'Snow', 'Sparse Forest']]
+    print(f'\nBasic features lenght: {len(X)}')
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv(f'{name}_df_knn_mean.csv', index_col = 0)
-        X = pd.concat([X, X_knn_aug], axis=1)
+        X_aug = pd.read_csv(f'{name}_df_knn_mean.csv', index_col = 0)
+        X = pd.concat([X, X_aug], axis=1)
+        print(f'knn mean features lenght: {len(X_aug)}')
+
         
     if add_knn_concat:
-        X_knn_aug = pd.read_csv(f'{name}_df_knn_concat.csv', index_col = 0)
-        X = pd.concat([X, X_knn_aug], axis=1)
+        X_aug = pd.read_csv(f'{name}_df_knn_concat.csv', index_col = 0)
+        X = pd.concat([X, X_aug], axis=1)
+        print(f'knn concat features lenght: {len(X_aug)}')
+
     
     if add_dates:
-        X_knn_aug = pd.read_csv(f'{name}_df_dates.csv', index_col = 0)
-        X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5',
+        X_aug = pd.read_csv(f'{name}_df_dates.csv', index_col = 0)
+        X_aug = X_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5',
                                'old1','old2','old3','old4','old5',]]
-        if len(X_knn_aug) != len(X):
+        if len(X_aug) != len(X):
             raise
-        X = pd.concat([X, X_knn_aug], axis=1)
+        print(f'Dates features lenght: {len(X_aug)}')
+        X = pd.concat([X, X_aug], axis=1)
         
     if add_polynomial:
         print('Poly augment...')

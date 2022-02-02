@@ -56,7 +56,8 @@ random forest:
 + knn concat features : 84:76.5 %
 + dates (diff_avX, old?) : 
 
-
+xgb:
+3 : 92/78.5 %
 
 
 
