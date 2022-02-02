@@ -2,3 +2,5 @@
 *.geojson
 *.npy
 figures
+*.joblib
+*.txt
