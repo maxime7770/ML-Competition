@@ -45,13 +45,13 @@ X, Y = load_data(add_knn_mean=True,
                      add_knn_concat=False,
                      add_dates=False,   #Cannot cause data were dropped
                      n_data_max= 99999999999,
-                     shuffle=True,
+                     shuffle=False,
 )
 X_val = load_data_test(add_knn_mean=True,
                      add_knn_concat=False,
                      add_dates=False,   #Cannot cause data were dropped
                      n_data_max= 99999999999,
-                     shuffle=True,
+                     shuffle=False,
 )
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
 ###

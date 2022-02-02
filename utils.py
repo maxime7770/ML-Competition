@@ -73,7 +73,7 @@ def load_data(add_knn_mean = False,
         'None.1', 'River', 'Snow', 'Sparse Forest']]
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv(f'{name}_df_knn_mean.csv')
+        X_knn_aug = pd.read_csv(f'{name}_df_knn_mean.csv', index_col = 0)
         X = pd.concat([X, X_knn_aug], axis=1)
         
     if add_knn_concat:
@@ -82,7 +82,8 @@ def load_data(add_knn_mean = False,
     
     if add_dates:
         X_knn_aug = pd.read_csv(f'{name}_df_dates.csv', index_col = 0)
-        X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5']]
+        X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5',
+                               'old1','old2','old3','old4','old5',]]
         if len(X_knn_aug) != len(X):
             raise
         X = pd.concat([X, X_knn_aug], axis=1)
@@ -101,7 +102,6 @@ def load_data(add_knn_mean = False,
 
 
 
-
 def load_data_test(add_knn_mean = False, 
               add_knn_concat = False, 
               add_polynomial = False, 
@@ -113,7 +113,7 @@ def load_data_test(add_knn_mean = False,
     idx = np.random.permutation(train_df.index) if shuffle else train_df.index  #Shuffle train dataset
 
     X = train_df
-    
+        
     X = X[[
        'change_status_date1', 'change_status_date2', 'change_status_date3', 'change_status_date4', 'change_status_date5',
        'diff1', 'diff2', 'diff3', 'diff4', 
@@ -131,7 +131,7 @@ def load_data_test(add_knn_mean = False,
         'None.1', 'River', 'Snow', 'Sparse Forest']]
 
     if add_knn_mean:
-        X_knn_aug = pd.read_csv(f'{name}_df_knn_mean.csv')
+        X_knn_aug = pd.read_csv(f'{name}_df_knn_mean.csv', index_col = 0)
         X = pd.concat([X, X_knn_aug], axis=1)
         
     if add_knn_concat:
@@ -140,7 +140,8 @@ def load_data_test(add_knn_mean = False,
     
     if add_dates:
         X_knn_aug = pd.read_csv(f'{name}_df_dates.csv', index_col = 0)
-        X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5']]
+        X_knn_aug = X_knn_aug[['duration_to_reach1','duration_to_reach2','duration_to_reach3','duration_to_reach4','duration_to_reach5',
+                               'old1','old2','old3','old4','old5',]]
         if len(X_knn_aug) != len(X):
             raise
         X = pd.concat([X, X_knn_aug], axis=1)
@@ -152,4 +153,4 @@ def load_data_test(add_knn_mean = False,
         print('Done')
 
     print("X_val loaded.")
-    return X[: n_data_max][idx]
+    return X.iloc[idx][: n_data_max]
