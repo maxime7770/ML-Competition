@@ -54,10 +54,11 @@ random forest:
   base features : 70/70 %
 + knn mean features : 84/77 %
 + knn concat features : 84:76.5 %
-+ dates (diff_avX, old?) : 
++ dates (diff_avX, old?) : 85/77 %
 
 xgb:
 3 : 92/78.5 %
+4 : 86.6/78.5 %
 
 
 
