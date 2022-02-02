@@ -29,13 +29,13 @@ change_type_map = {
 }
 # to delete last classes
 
-change_type_map = {
-    "Demolition": 0,
-    "Road": 1,
-    "Residential": 2,
-    "Commercial": 3,
-    "Industrial": 4
-}
+# change_type_map = {
+#     "Demolition": 0,
+#     "Road": 1,
+#     "Residential": 2,
+#     "Commercial": 3,
+#     "Industrial": 4
+# }
 
 train_df = gpd.read_file("train.geojson", index_col=0)
 test_df = gpd.read_file("test.geojson", index_col=0)
@@ -44,8 +44,8 @@ test_df = gpd.read_file("test.geojson", index_col=0)
 # trying to delete last classes
 
 
-train_df = train_df.drop(
-    train_df[(train_df["change_type"] == "Mega Projects")].index)
+# train_df = train_df.drop(
+#     train_df[(train_df["change_type"] == "Mega Projects")].index)
 
 
 # and thus drop if status_sate=excavation because it is essentially in the 5th class
@@ -812,3 +812,6 @@ train_df["change_type"] = train_df["change_type"].apply(
 
 train_df.to_csv("train_df.csv")
 test_df.to_csv("test_df.csv")
+
+
+print('Preprocessing done.')

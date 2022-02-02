@@ -43,3 +43,25 @@ Features qu'on a:
 
 - G: one hot encoding pour le geographical type G
 - U: one hot encoding pour le geographical type U (pas de one hot?)
+
+
+
+PERFOMANCES:
+Performances obtenues en train sur 80% des données d'entrainement et test sur 20% des données d'entrainement.
+On augmente le nombre d'estimateurs n jusqu'à ce que le score de test baisse ou que ce soit trop long a entrainer, et on prends les résultats.
+
+random forest:
+  base features : 70/70 %
++ knn mean features : 84/77 %
++ knn concat features : 84:76.5 %
++ dates (diff_avX, old?) : 
+
+xgb:
+3 : 92/78.5 %
+
+
+
+
+
+
+
