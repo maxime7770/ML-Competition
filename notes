@@ -64,5 +64,11 @@ xgb:
 
 
 
+pour fourier : 
+
+https://buildmedia.readthedocs.org/media/pdf/spatial-efd/latest/spatial-efd.pdf
+
+faire le truc du Power avec le threshold
+utiliser la moyenne des coeffs avec les fonctions du package
 
 
