@@ -63,7 +63,10 @@ xgb:
 
 
 
+FEATURES PRESENTANT DES DIFFERENCES EN DISTRIBUTION ENTRE TRAIN ET TEST
+old34
 
+<<<<<<< HEAD
 pour fourier : 
 
 https://buildmedia.readthedocs.org/media/pdf/spatial-efd/latest/spatial-efd.pdf
@@ -72,3 +75,9 @@ faire le truc du Power avec le threshold
 utiliser la moyenne des coeffs avec les fonctions du package
 
 
+=======
+FEATURES QUI BAISSE LA CV SIGNIFICATIVEMENT
+diff1
+centroid_x (2%!)
+is_convex
+>>>>>>> 4f67ff690ad47b849595aeba78564264319da107
