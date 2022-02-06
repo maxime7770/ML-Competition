@@ -48,7 +48,7 @@ def load_list(name):
     return A.tolist()
 
 
-<<<<<<< HEAD
+
 def load_data(add_knn_mean=False,
               add_knn_concat=False,
               add_polynomial=False,
