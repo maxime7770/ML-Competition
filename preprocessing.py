@@ -597,6 +597,7 @@ def sum_dist(u):
         sum += d(centroid, rect[i])
     return sum
 
+
 def sum_dist2(u):
     c = u.centroid
     centroid = [c.x, c.y]
@@ -604,7 +605,8 @@ def sum_dist2(u):
 
     sum = 0
     n_points = len(polyg)
-    if n_points ==0: return None    # or 0 ?
+    if n_points == 0:
+        return None    # or 0 ?
     for i in range(n_points):
         sum += d(centroid, polyg[i])
     return sum/n_points
@@ -742,9 +744,18 @@ col_str = [
     "change_status_date4",
     "change_status_date5",
 ]
-le = LabelEncoder()
-train_df[col_str] = train_df[col_str].apply(le.fit_transform)
-test_df[col_str] = test_df[col_str].apply(le.fit_transform)
+i = 0
+for c in col_str:
+    i += 1
+    train_df = pd.concat(
+        [train_df, pd.get_dummies(train_df[c], prefix=str(i))], axis=1
+    )
+    test_df = pd.concat(
+        [test_df, pd.get_dummies(test_df[c], prefix=str(i))], axis=1
+    )
+
+    train_df = train_df.drop(c, axis=1)
+    test_df = test_df.drop(c, axis=1)
 
 
 train_df["urban_types"] = train_df["urban_types"].apply(
@@ -785,33 +796,8 @@ train_df["change_type"] = train_df["change_type"].apply(
     lambda x: change_type_map[x])
 
 
-############  FEATURETOOLS  ###############
-# import featuretools as ft
-# import woodwork
-
-# # J'ai gardé les dates sous forme purement numérique, parce qu'il faut un time_index
-# ES = ft.EntitySet(id='train df')
-
-# logical_types = {}
-
-# ES = ES.add_dataframe(dataframe_name='train date1', dataframe=train_df[['index', 'date1', 'change_status_date1', 'area', 'length']], index='index', logical_types={
-#                       'change_status_date1': woodwork.logical_types.Categorical, 'date1': woodwork.logical_types.Datetime}, time_index='date1')
-# ES = ES.add_dataframe(dataframe_name='train date2', dataframe=train_df[['index', 'date2', 'change_status_date2', 'area', 'length']], make_index=True, index='index2', logical_types={
-#                       'change_status_date2': woodwork.logical_types.Categorical, 'date2': woodwork.logical_types.Datetime}, time_index='date2')
-
-# ES = ES.add_relationship('train date1', 'index', 'train date2', 'index')
-# print(ES)
-
-# feature_matrix, feature_defs = ft.dfs(entityset=ES,
-#                                       target_dataframe_name='train date1',
-#                                       verbose=1
-#                                       )
-# print(feature_matrix)
-######################################
-
-
-train_df.to_csv("train_df.csv")
-test_df.to_csv("test_df.csv")
+train_df.to_csv("train_df.csv", index=False)
+test_df.to_csv("test_df.csv", index=False)
 
 
 print('Preprocessing done.')
