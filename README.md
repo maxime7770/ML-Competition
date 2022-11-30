@@ -8,6 +8,8 @@
 
 The folder contains all the necessary code to create all the features and get the scores we had for submissions.
 
+The repository is not cleaned yet and will be cleaned in the future.
+
 
 # Authors
 
